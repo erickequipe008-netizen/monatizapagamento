@@ -1,0 +1,33 @@
+body{
+    font-family: Arial, sans-serif;
+    background:#f5f5f5;
+    margin:0;
+    padding:40px;
+}
+
+.checkout{
+    max-width:600px;
+    margin:auto;
+    background:#fff;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 0 20px rgba(0,0,0,.1);
+}
+
+h1{
+    margin-top:0;
+}
+
+button{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:18px;
+}
+
+pre{
+    margin-top:20px;
+    white-space:pre-wrap;
+}

@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MonatizaPay — Finalizar Compra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07070E;--s1:#0D0D1C;--s2:#131325;--s3:#1A1A30;
+  --bd:rgba(255,255,255,0.07);--bd2:rgba(255,255,255,0.04);
+  --t1:#FFFFFF;--t2:rgba(255,255,255,0.60);--t3:rgba(255,255,255,0.30);
+  --v:#7C5CFA;--v2:#6244E6;--v3:#A48FFF;
+  --vbg:rgba(124,92,250,0.10);--vbd:rgba(124,92,250,0.22);
+  --n:#3DFFA0;--nbg:rgba(61,255,160,0.10);--nbd:rgba(61,255,160,0.22);
+  --r1:8px;--r2:14px;--r3:20px;--r4:28px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{
+  font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--t1);
+  line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;
+}
+
+/* ambient glow */
+.gbg{position:fixed;top:-25vh;left:50%;transform:translateX(-50%);width:1000px;height:600px;background:radial-gradient(ellipse,rgba(124,92,250,0.08) 0%,transparent 65%);pointer-events:none;z-index:0;border-radius:50%}
+
+/* HEADER */
+header{
+  position:relative;z-index:1;
+  background:rgba(7,7,14,0.8);backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--bd);
+  padding:0 24px;height:62px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.h-logo{display:flex;align-items:center;gap:8px;font-size:1.05rem;font-weight:800;letter-spacing:-0.05em;color:var(--t1)}
+.h-dot{width:8px;height:8px;background:var(--v);border-radius:50%;box-shadow:0 0 10px var(--v);animation:pd 2.5s ease-in-out infinite}
+@keyframes pd{0%,100%{opacity:1}50%{opacity:.25}}
+.h-logo span{color:var(--v3)}
+.h-secure{
+  position:absolute;right:24px;
+  display:flex;align-items:center;gap:6px;
+  background:var(--nbg);border:1px solid var(--nbd);
+  border-radius:100px;padding:5px 13px;
+  font-size:0.7rem;font-weight:700;color:var(--n);
+}
+.h-secure svg{width:11px;height:11px;stroke:var(--n);fill:none;stroke-width:2.5}
+
+/* LAYOUT */
+.container{
+  position:relative;z-index:1;
+  max-width:1080px;margin:0 auto;padding:40px 24px 60px;
+  display:grid;grid-template-columns:1.5fr 1fr;gap:24px;align-items:start;
+}
+
+.card{
+  background:var(--s1);border:1px solid var(--bd);
+  border-radius:var(--r3);padding:28px;
+}
+
+.card-title{
+  font-size:0.93rem;font-weight:700;color:var(--t1);
+  letter-spacing:-0.02em;margin-bottom:18px;
+  display:flex;align-items:center;gap:9px;
+}
+.card-title-ic{
+  width:28px;height:28px;background:var(--vbg);border:1px solid var(--vbd);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.card-title-ic svg{width:13px;height:13px;stroke:var(--v3);fill:none;stroke-width:2}
+
+/* FORM */
+label{display:block;font-size:0.72rem;font-weight:600;color:var(--t3);letter-spacing:0.02em;margin:14px 0 6px}
+label:first-of-type{margin-top:0}
+input{
+  width:100%;padding:12px 14px;
+  background:var(--s2);border:1px solid var(--bd);
+  border-radius:var(--r1);font-size:0.85rem;color:var(--t1);
+  font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s;
+}
+input::placeholder{color:var(--t3)}
+input:focus{border-color:var(--v3);box-shadow:0 0 0 3px rgba(124,92,250,0.12)}
+input[readonly]{color:var(--t2);cursor:default}
+.row{display:flex;gap:10px}
+.row > div{flex:1}
+
+/* PAYMENT TABS */
+.payment-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.payment-tabs button{
+  padding:13px;border:1.5px solid var(--bd);background:var(--s2);
+  border-radius:var(--r2);cursor:pointer;font-family:inherit;
+  font-size:0.83rem;font-weight:700;color:var(--t3);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .15s;
+}
+.payment-tabs button svg{width:16px;height:16px;stroke:var(--t3);fill:none;stroke-width:1.7}
+.payment-tabs button.active{border-color:var(--v3);color:var(--v3);background:var(--vbg)}
+.payment-tabs button.active svg{stroke:var(--v3)}
+.payment-tabs button:not(.active):hover{border-color:var(--bd);color:var(--t2)}
+
+.pay-content{display:none}
+.pay-content.active{display:block}
+
+/* PIX BOX */
+.pix-box{
+  text-align:center;padding:22px;
+  background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2);
+}
+.pix-qr-wrap{
+  width:170px;height:170px;background:#fff;border-radius:12px;
+  margin:0 auto 14px;display:flex;align-items:center;justify-content:center;
+}
+.pix-qr-wrap svg{width:140px;height:140px}
+.pix-box p{font-size:0.78rem;color:var(--t2);margin-bottom:12px}
+.pix-code-row{display:flex;gap:8px;align-items:center}
+.pix-code-row input{text-align:center;font-size:0.72rem;letter-spacing:0.01em}
+.pix-copy-btn{
+  flex-shrink:0;width:42px;height:42px;
+  background:var(--v);border:none;border-radius:var(--r1);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:background .15s;
+}
+.pix-copy-btn:hover{background:var(--v2)}
+.pix-copy-btn svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2}
+.pix-instant{
+  display:inline-flex;align-items:center;gap:6px;margin-top:14px;
+  background:var(--nbg);border:1px solid var(--nbd);border-radius:100px;
+  padding:5px 13px;font-size:0.7rem;font-weight:700;color:var(--n);
+}
+.pix-instant svg{width:11px;height:11px;stroke:var(--n);fill:none;stroke-width:2.5}
+
+/* INSTALLMENTS BADGE */
+.installment-info{
+  display:flex;align-items:center;gap:10px;
+  background:var(--s2);border:1px solid var(--bd);border-radius:var(--r1);
+  padding:12px 14px;margin-top:14px;
+}
+.installment-ic{
+  width:30px;height:30px;background:var(--vbg);border:1px solid var(--vbd);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.installment-ic svg{width:14px;height:14px;stroke:var(--v3);fill:none;stroke-width:1.8}
+.installment-text{font-size:0.78rem;font-weight:600;color:var(--t1)}
+.installment-sub{font-size:0.65rem;color:var(--t3);margin-top:1px}
+
+/* DIVIDER */
+.card-divider{height:1px;background:var(--bd);margin:24px 0}
+
+/* PAY BUTTON */
+.btn-buy{
+  width:100%;margin-top:8px;padding:16px;
+  background:var(--v);color:#fff;border:none;
+  border-radius:var(--r2);font-size:0.92rem;font-weight:700;
+  font-family:inherit;cursor:pointer;letter-spacing:-0.01em;
+  box-shadow:0 4px 24px rgba(124,92,250,0.35);transition:all .2s;
+}
+.btn-buy:hover{background:var(--v2);transform:translateY(-2px);box-shadow:0 8px 32px rgba(124,92,250,0.5)}
+.btn-buy:disabled{opacity:.6;cursor:wait;transform:none}
+
+.secure-row{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  margin-top:16px;font-size:0.7rem;color:var(--t3);
+}
+.secure-row svg{width:12px;height:12px;stroke:var(--v3);fill:none;stroke-width:1.8}
+
+.seals-row{
+  display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px;
+}
+.seal{
+  display:flex;align-items:center;gap:5px;
+  border:1px solid var(--bd);background:var(--s2);
+  border-radius:6px;padding:4px 10px;
+  font-size:0.6rem;font-weight:600;color:var(--t3);
+}
+.seal svg{width:11px;height:11px;stroke:var(--v3);fill:none;stroke-width:1.8}
+
+/* SUMMARY CARD */
+.summary-card{position:sticky;top:24px}
+.product{display:flex;gap:14px;align-items:center;margin-bottom:18px}
+.product-img{
+  width:52px;height:52px;border-radius:var(--r1);flex-shrink:0;
+  background:linear-gradient(135deg,var(--v2),var(--v));
+  display:flex;align-items:center;justify-content:center;
+}
+.product-img svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:1.7}
+.product-name{font-size:0.86rem;font-weight:700;color:var(--t1);margin-bottom:3px}
+.product-sub{font-size:0.7rem;color:var(--t3)}
+
+.summary-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:9px 0;font-size:0.8rem;color:var(--t2);
+}
+.summary-item + .summary-item{border-top:1px solid var(--bd2)}
+.summary-item .discount{color:var(--n);font-weight:600}
+.summary-total{
+  display:flex;justify-content:space-between;align-items:center;
+  padding-top:16px;margin-top:6px;border-top:1px solid var(--bd);
+  font-size:0.78rem;font-weight:700;color:var(--t1);
+}
+.summary-total .val{font-size:1.3rem;font-weight:800;letter-spacing:-0.03em}
+
+/* skeleton loading */
+.skeleton{
+  display:inline-block;height:14px;width:80px;border-radius:4px;
+  background:linear-gradient(90deg,var(--s2) 25%,var(--s3) 50%,var(--s2) 75%);
+  background-size:200% 100%;animation:shimmer 1.4s infinite;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* trust mini list inside summary */
+.trust-mini{display:flex;flex-direction:column;gap:10px;margin-top:20px;padding-top:18px;border-top:1px solid var(--bd)}
+.tm-row{display:flex;align-items:center;gap:9px}
+.tm-ic{width:26px;height:26px;background:var(--vbg);border:1px solid var(--vbd);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tm-ic svg{width:12px;height:12px;stroke:var(--v3);fill:none;stroke-width:2}
+.tm-text{font-size:0.74rem;font-weight:500;color:var(--t2)}
+
+/* FOOTER */
+footer{
+  position:relative;z-index:1;text-align:center;padding:24px;
+  font-size:0.72rem;color:var(--t3);border-top:1px solid var(--bd);
+}
+footer a{color:var(--v3);text-decoration:none}
+
+/* RESPONSIVE */
+@media(max-width:860px){
+  .container{grid-template-columns:1fr;padding:24px 16px 40px}
+  .summary-card{position:static;order:-1}
+  .h-secure{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="gbg"></div>
+
+<header>
+  <div class="h-logo"><div class="h-dot"></div>Monatiza<span>Pay</span></div>
+  <div class="h-secure"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Ambiente seguro</div>
+</header>
+
+<div class="container">
+
+  <!-- PAYMENT CARD -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-ic"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+      Dados de pagamento
+    </div>
+
+    <div class="payment-tabs">
+      <button class="active" onclick="showTab('card', this)">
+        <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Cartão de Crédito
+      </button>
+      <button onclick="showTab('pix', this)">
+        <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        PIX
+      </button>
+    </div>
+
+    <div id="card" class="pay-content active">
+      <label>Número do cartão</label>
+      <input type="text" placeholder="0000 0000 0000 0000" maxlength="19">
+
+      <label>Nome impresso no cartão</label>
+      <input type="text" placeholder="Como está no cartão">
+
+      <div class="row">
+        <div>
+          <label>Validade</label>
+          <input type="text" placeholder="MM/AA" maxlength="5">
+        </div>
+        <div>
+          <label>CVV</label>
+          <input type="text" placeholder="123" maxlength="4">
+        </div>
+      </div>
+
+      <div class="installment-info">
+        <div class="installment-ic"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <div>
+          <div class="installment-text" id="parcelas">Carregando opções de parcelamento...</div>
+          <div class="installment-sub">Liberação em até 2 dias úteis após aprovação</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="pix" class="pay-content">
+      <div class="pix-box">
+        <div class="pix-qr-wrap">
+          <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" fill="#07070E">
+            <rect x="2" y="2" width="20" height="20" rx="2" fill="none" stroke="#07070E" stroke-width="2"/><rect x="6" y="6" width="12" height="12" rx="1"/>
+            <rect x="38" y="2" width="20" height="20" rx="2" fill="none" stroke="#07070E" stroke-width="2"/><rect x="42" y="6" width="12" height="12" rx="1"/>
+            <rect x="2" y="38" width="20" height="20" rx="2" fill="none" stroke="#07070E" stroke-width="2"/><rect x="6" y="42" width="12" height="12" rx="1"/>
+            <rect x="26" y="2" width="3" height="3"/><rect x="31" y="2" width="5" height="3"/><rect x="26" y="7" width="5" height="3"/><rect x="33" y="7" width="3" height="3"/>
+            <rect x="26" y="12" width="3" height="5"/><rect x="31" y="14" width="5" height="3"/><rect x="26" y="26" width="8" height="3"/><rect x="36" y="26" width="3" height="5"/>
+            <rect x="41" y="26" width="5" height="3"/><rect x="48" y="26" width="5" height="3"/><rect x="26" y="31" width="3" height="3"/><rect x="31" y="31" width="5" height="5"/>
+            <rect x="38" y="31" width="3" height="3"/><rect x="43" y="33" width="3" height="3"/><rect x="26" y="38" width="5" height="3"/><rect x="33" y="38" width="3" height="5"/>
+            <rect x="38" y="40" width="8" height="3"/><rect x="48" y="38" width="5" height="5"/><rect x="26" y="43" width="3" height="5"/><rect x="31" y="45" width="5" height="3"/>
+            <rect x="38" y="45" width="5" height="3"/><rect x="45" y="45" width="3" height="5"/>
+          </svg>
+        </div>
+        <p>Escaneie o QR code com o app do seu banco ou copie o código abaixo</p>
+        <div class="pix-code-row">
+          <input type="text" id="pixCode" value="00020126chave-pix-exemplo..." readonly>
+          <button class="pix-copy-btn" onclick="copyPix()" title="Copiar código">
+            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+        <div class="pix-instant"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>Aprovação imediata · Taxa 0%</div>
+      </div>
+    </div>
+
+    <div class="card-divider"></div>
+
+    <div class="card-title">
+      <div class="card-title-ic"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      Seus dados
+    </div>
+
+    <label>Nome completo</label>
+    <input type="text" placeholder="Digite seu nome completo">
+
+    <label>E-mail</label>
+    <input type="email" placeholder="seuemail@exemplo.com">
+
+    <label>CPF</label>
+    <input type="text" placeholder="000.000.000-00">
+
+    <button id="btnPagamento" class="btn-buy" onclick="finalizarCompra()">Finalizar pagamento seguro</button>
+
+    <div class="secure-row">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Pagamento criptografado de ponta a ponta
+    </div>
+    <div class="seals-row">
+      <div class="seal"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>SSL 256-bit</div>
+      <div class="seal"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>PCI DSS N.1</div>
+      <div class="seal"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>LGPD</div>
+    </div>
+  </div>
+
+  <!-- SUMMARY CARD -->
+  <div class="card summary-card">
+    <div class="card-title">
+      <div class="card-title-ic"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+      Resumo do pedido
+    </div>
+
+    <div class="product">
+      <div class="product-img"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+      <div>
+        <div class="product-name" id="nome-produto"><span class="skeleton"></span></div>
+        <div class="product-sub">Acesso vitalício</div>
+      </div>
+    </div>
+
+    <div class="summary-item"><span>Subtotal</span><span id="valor-produto"><span class="skeleton"></span></span></div>
+    <div class="summary-item"><span>Desconto</span><span class="discount">− R$ 0,00</span></div>
+    <div class="summary-total"><span>Total</span><span class="val" id="valor-total"><span class="skeleton"></span></span></div>
+
+    <div class="trust-mini">
+      <div class="tm-row"><div class="tm-ic"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="tm-text">PIX com aprovação na hora</div></div>
+      <div class="tm-row"><div class="tm-ic"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="tm-text">Suporte 24h se precisar de ajuda</div></div>
+      <div class="tm-row"><div class="tm-ic"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="tm-text">Dados nunca armazenados no servidor</div></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>© 2026 MonatizaPay. Todos os direitos reservados. · <a href="#">Termos</a> · <a href="#">Privacidade</a></footer>
+
+<script src="https://js.stripe.com/v3/"></script>
+
+<script>
+function showTab(id, btn){
+  document.querySelectorAll('.pay-content').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.payment-tabs button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+
+  const payBtn = document.getElementById('btnPagamento');
+  if(id === 'pix'){
+    payBtn.textContent = 'Confirmar pagamento via PIX';
+  } else {
+    payBtn.textContent = 'Finalizar pagamento seguro';
+  }
+}
+
+function copyPix(){
+  const input = document.getElementById('pixCode');
+  input.select();
+  document.execCommand('copy');
+  const btn = document.querySelector('.pix-copy-btn svg');
+  const original = btn.innerHTML;
+  btn.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+  setTimeout(()=>{ btn.innerHTML = original; }, 1500);
+}
+
+const params = new URLSearchParams(window.location.search);
+const produtoId = params.get("produto") || "premium";
+const stripe = Stripe("pk_live_51SnhfGHEsh8GES85Mxvipq0sviARcCPwCKD591lpdAvuwbclnEEb9zhhHhVBjjFvsJeh5PAPFMlvxZKfVu8hn6cp00CxLnePqu");
+
+async function carregarProduto(){
+  try{
+    const resposta = await fetch(`http://localhost:3000/produto/${produtoId}`);
+    const produto = await resposta.json();
+
+    document.getElementById("nome-produto").innerText = produto.nome;
+    document.getElementById("valor-produto").innerText = `R$ ${produto.valor},00`;
+    document.getElementById("valor-total").innerText = `R$ ${produto.valor},00`;
+    document.getElementById("parcelas").innerText = `1x de R$ ${produto.valor},00 sem juros`;
+  } catch(err){
+    // fallback de demonstração caso o backend não esteja disponível
+    document.getElementById("nome-produto").innerText = "Consulta Online — Dra. Ana Lima";
+    document.getElementById("valor-produto").innerText = "R$ 280,00";
+    document.getElementById("valor-total").innerText = "R$ 280,00";
+    document.getElementById("parcelas").innerText = "1x de R$ 280,00 sem juros";
+  }
+}
+
+async function finalizarCompra(){
+  const btn = document.getElementById('btnPagamento');
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Processando...';
+
+  try{
+    const resposta = await fetch("http://localhost:3000/criar-pagamento", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ produtoId })
+    });
+
+    const dados = await resposta.json();
+
+    console.log(dados);
+
+    if (dados.url) {
+
+  window.location.href = dados.url;
+
+  return;
+}
+
+if (dados.pixCode) {
+    document.getElementById("pixCode").value = dados.pixCode;
+}
+
+if (dados.qrCodeBase64) {
+    document.querySelector(".pix-qr-wrap").innerHTML =
+        `<img src="data:image/png;base64,${dados.qrCodeBase64}"
+        style="width:170px;height:170px;">`;
+}
+
+showTab('pix', document.querySelectorAll('.payment-tabs button')[1]);
+
+btn.textContent = 'PIX gerado!';
+btn.style.background = '#00A651';
+  } finally {
+    setTimeout(()=>{
+      btn.disabled = false;
+      btn.textContent = original;
+      btn.style.background = '';
+    }, 2500);
+  }
+}
+
+carregarProduto();
+</script>
+
+</body>
+</html>
