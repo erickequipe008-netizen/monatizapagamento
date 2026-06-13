@@ -1,15 +1,22 @@
+
 const Stripe = require("stripe");
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
 module.exports = async (req, res) => {
-  if (req.method !== "POST") {
-    return res.status(405).json({
-      error: "Método não permitido",
-    });
-  }
-
   try {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.status(500).json({
+        error: "STRIPE_SECRET_KEY não configurada"
+      });
+    }
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+    if (req.method !== "POST") {
+      return res.status(405).json({
+        error: "Método não permitido"
+      });
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
 
@@ -21,29 +28,31 @@ module.exports = async (req, res) => {
             currency: "brl",
 
             product_data: {
-              name: "Plano Monatiza",
+              name: "Plano Monatiza"
             },
 
-            unit_amount: 1990,
+            unit_amount: 1990
           },
 
-          quantity: 1,
-        },
+          quantity: 1
+        }
       ],
 
       success_url:
-        "https://pagamento.monatiza.com/sucesso.html",
+        "https://google.com",
 
       cancel_url:
-        "https://pagamento.monatiza.com/cancelado.html",
+        "https://google.com"
     });
 
     return res.status(200).json({
-      url: session.url,
+      url: session.url
     });
+
   } catch (error) {
+
     return res.status(500).json({
-      error: error.message,
+      error: error.message
     });
   }
 };
